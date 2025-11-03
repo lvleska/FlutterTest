@@ -17,6 +17,8 @@ class ApiService {
     _authToken = token;
   }
 
+  String? getAuthToken() => _authToken;
+
   Map<String, String> _getHeaders() {
     final headers = {
       'Content-Type': 'application/json',
@@ -28,6 +30,7 @@ class ApiService {
   }
 
   /// Send SMS code to phone
+  /// POST /auth/send-code
   Future<Map<String, dynamic>> sendSmsCode(String phone) async {
     try {
       final response = await http.post(
@@ -47,8 +50,9 @@ class ApiService {
   }
 
   /// Verify SMS code
-  Future<Map<String, dynamic>> verifySmsCode(
-      String phone, String code) async {
+  /// POST /auth/verify-code
+  /// Returns: { exists: bool, token?: string, user?: User }
+  Future<Map<String, dynamic>> verifyCode(String phone, String code) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/verify-code'),
@@ -71,7 +75,9 @@ class ApiService {
   }
 
   /// Register new user
-  Future<Map<String, dynamic>> registerUser({
+  /// POST /auth/register
+  /// Returns: { user: User, token: string }
+  Future<Map<String, dynamic>> register({
     required String phone,
     required String firstName,
     required String lastName,
@@ -104,14 +110,19 @@ class ApiService {
   }
 
   /// Create individual context (for freelancers)
-  Future<void> createIndividualContext() async {
+  /// POST /users/contexts
+  /// Body: { type: 'individual' }
+  Future<Map<String, dynamic>> createIndividualContext() async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/user/context/individual'),
+        Uri.parse('$baseUrl/users/contexts'),
         headers: _getHeaders(),
+        body: jsonEncode({'type': 'individual'}),
       );
 
-      if (response.statusCode != 200 && response.statusCode != 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
         throw Exception(
             'Failed to create individual context: ${response.statusCode}');
       }
@@ -120,28 +131,13 @@ class ApiService {
     }
   }
 
-  /// Update user skills
-  Future<void> updateUserSkills(List<int> skillIds) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/user/skills'),
-        headers: _getHeaders(),
-        body: jsonEncode({'skillIds': skillIds}),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to update skills: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Failed to update skills: $e');
-    }
-  }
-
-  /// Save organization
-  Future<Map<String, dynamic>> saveOrganization({
+  /// Create organization context
+  /// POST /users/contexts
+  /// Body: { type: 'organization', organization: {...} }
+  Future<Map<String, dynamic>> createOrganizationContext({
     required String inn,
     required String name,
-    required String type,
+    required String organizationType,
     String? managementName,
     String? shortName,
     String? kpp,
@@ -152,38 +148,88 @@ class ApiService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/user/organization'),
+        Uri.parse('$baseUrl/users/contexts'),
         headers: _getHeaders(),
         body: jsonEncode({
-          'inn': inn,
-          'name': name,
-          'type': type,
-          'managementName': managementName,
-          'shortName': shortName,
-          'kpp': kpp,
-          'ogrn': ogrn,
-          'address': address,
-          'phone': phone,
-          'email': email,
+          'type': 'organization',
+          'organization': {
+            'inn': inn,
+            'name': name,
+            'organizationType': organizationType,
+            'managementName': managementName,
+            'shortName': shortName,
+            'kpp': kpp,
+            'ogrn': ogrn,
+            'address': address,
+            'phone': phone,
+            'email': email,
+          },
         }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to save organization: ${response.statusCode}');
+        throw Exception(
+            'Failed to create organization context: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Failed to save organization: $e');
+      throw Exception('Failed to create organization context: $e');
     }
   }
 
-  /// Search organization by INN
-  Future<Map<String, dynamic>> searchOrganizationByInn(String inn) async {
+  /// Update user skills
+  /// PUT /users/skills
+  /// Body: { skillIds: number[] }
+  Future<Map<String, dynamic>> updateUserSkills(List<int> skillIds) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/users/skills'),
+        headers: _getHeaders(),
+        body: jsonEncode({'skillIds': skillIds}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to update skills: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to update skills: $e');
+    }
+  }
+
+  /// Get skill categories with skills
+  /// GET /users/skill-categories
+  /// Returns: { categories: SkillCategory[] }
+  Future<Map<String, dynamic>> getSkillCategories() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/organization/search?inn=$inn'),
+        Uri.parse('$baseUrl/users/skill-categories'),
         headers: _getHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception(
+            'Failed to get skill categories: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to get skill categories: $e');
+    }
+  }
+
+  /// Search organization by query (Dadata integration)
+  /// POST /organizations/search-dadata
+  /// Body: { query: string }
+  /// Returns: { results: OrganizationResult[] }
+  Future<Map<String, dynamic>> searchOrganization(String query) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/organizations/search-dadata'),
+        headers: _getHeaders(),
+        body: jsonEncode({'query': query}),
       );
 
       if (response.statusCode == 200) {
@@ -198,11 +244,12 @@ class ApiService {
   }
 
   /// Upload profile photo
-  Future<void> uploadProfilePhoto(File photoFile) async {
+  /// POST /auth/profile/upload-photo
+  Future<Map<String, dynamic>> uploadProfilePhoto(File photoFile) async {
     try {
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('$baseUrl/user/photo'),
+        Uri.parse('$baseUrl/auth/profile/upload-photo'),
       );
 
       if (_authToken != null) {
@@ -216,7 +263,9 @@ class ApiService {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      if (response.statusCode != 200 && response.statusCode != 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
         throw Exception('Failed to upload photo: ${response.statusCode}');
       }
     } catch (e) {
@@ -224,22 +273,22 @@ class ApiService {
     }
   }
 
-  /// Get skills list
-  Future<List<Map<String, dynamic>>> getSkills() async {
+  /// Get current user info
+  /// GET /auth/me
+  Future<Map<String, dynamic>> getMe() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/skills'),
+        Uri.parse('$baseUrl/auth/me'),
         headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
+        return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to get skills: ${response.statusCode}');
+        throw Exception('Failed to get user info: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Failed to get skills: $e');
+      throw Exception('Failed to get user info: $e');
     }
   }
 }

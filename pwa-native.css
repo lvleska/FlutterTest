@@ -1,0 +1,233 @@
+/**
+ * PWA Native App Styles
+ *
+ * This file contains styles to make the PWA look and feel like a native mobile app
+ * - Hides scrollbars while maintaining scroll functionality
+ * - Optimizes for iOS Safari and Android Chrome
+ * - Maintains smooth scrolling and touch gestures
+ */
+
+/* ============================================
+   SCROLLBAR HIDING - Cross-browser solution
+   ============================================ */
+
+/* WebKit browsers (iOS Safari, Chrome, Edge, Safari) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+div::-webkit-scrollbar,
+section::-webkit-scrollbar,
+article::-webkit-scrollbar,
+aside::-webkit-scrollbar,
+nav::-webkit-scrollbar,
+main::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Target all scrollable elements */
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 0;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: transparent;
+}
+
+/* Firefox */
+html,
+body,
+div,
+section,
+article,
+aside,
+nav,
+main {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+/* Apply to all elements */
+* {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+/* IE 10+ and Edge Legacy */
+html,
+body,
+* {
+  -ms-overflow-style: none;
+}
+
+/* ============================================
+   SMOOTH SCROLLING - iOS Safari optimization
+   ============================================ */
+
+/* Enable momentum scrolling on iOS */
+html,
+body,
+div,
+section,
+article,
+aside,
+nav,
+main {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent overscroll bounce on specific elements */
+.no-bounce,
+.modal-content,
+.sheet-content,
+.fixed-scroll {
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+}
+
+/* Enable smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ============================================
+   TOUCH OPTIMIZATION
+   ============================================ */
+
+/* Optimize touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  /* Minimum touch target size (Apple HIG & Material Design) */
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  .clickable,
+  .touchable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevent text selection on UI elements */
+.no-select,
+button,
+.nav-item,
+.tab-item {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ============================================
+   NATIVE APP FEEL
+   ============================================ */
+
+/* Remove default browser behaviors */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent pull-to-refresh on main container */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* GPU acceleration for smoother animations */
+.animated,
+.scrollable,
+.modal,
+.sheet {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Optimize scroll performance */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Scrollable container with hidden scrollbar */
+.scrollable-hidden {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollable-hidden::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Horizontal scroll with hidden scrollbar */
+.scrollable-x-hidden {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollable-x-hidden::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* ============================================
+   SAFE AREA SUPPORT (iOS notch, home indicator)
+   ============================================ */
+
+/* Use these classes for elements that need safe area padding */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-all {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}

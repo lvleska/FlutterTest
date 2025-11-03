@@ -117,13 +117,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> _handleOrganizationComplete() async {
     try {
-      // Save organization to user
+      // Create organization context
       if (_registrationData.selectedOrganization != null) {
         final selectedOrg = _registrationData.selectedOrganization!;
-        final result = await _apiService.saveOrganization(
+        final result = await _apiService.createOrganizationContext(
           inn: selectedOrg.inn,
           name: selectedOrg.name,
-          type: _registrationData.organizationType,
+          organizationType: _registrationData.selectedRole ?? 'contractor',
           managementName: selectedOrg.management?.name,
           shortName: selectedOrg.shortName,
           kpp: selectedOrg.kpp,

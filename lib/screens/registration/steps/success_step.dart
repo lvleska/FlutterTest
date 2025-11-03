@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/registration_theme.dart';
 
 class SuccessStep extends StatelessWidget {
   final VoidCallback onComplete;
@@ -11,46 +12,44 @@ class SuccessStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                size: 120,
-                color: Colors.green[600],
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Регистрация завершена!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Добро пожаловать в приложение',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              ElevatedButton(
-                onPressed: onComplete,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text('Начать'),
-              ),
-            ],
+      backgroundColor: RegistrationTheme.backgroundColor,
+      body: RegistrationTheme.buildContent(
+        scrollable: false,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Spacer(),
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF2ECC71).withOpacity(0.1),
+            ),
+            child: const Icon(
+              Icons.check_circle,
+              size: 80,
+              color: Color(0xFF2ECC71),
+            ),
           ),
-        ),
+          const SizedBox(height: 32),
+          const Text(
+            'Регистрация завершена!',
+            style: RegistrationTheme.headerStyle,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Добро пожаловать в приложение',
+            style: RegistrationTheme.subtitleStyle,
+            textAlign: TextAlign.center,
+          ),
+          const Spacer(),
+          ElevatedButton(
+            onPressed: onComplete,
+            style: RegistrationTheme.getButtonStyle(),
+            child: const Text('Начать'),
+          ),
+        ],
       ),
     );
   }
